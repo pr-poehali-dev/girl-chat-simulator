@@ -81,9 +81,10 @@ const Index = () => {
   const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number; oldPrice: number } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'sbp' | 'crypto'>('card');
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [messages, setMessages] = useState<{ text: string; sender: 'user' | 'character' }[]>([]);
+  const [messages, setMessages] = useState<{ text: string; sender: 'user' | 'character'; type?: 'text' | 'image'; imageUrl?: string }[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   const getIntelligentResponse = (userMessage: string, character: Character, conversationHistory: { text: string; sender: string }[]): string => {
     const msg = userMessage.toLowerCase();
@@ -202,6 +203,83 @@ const Index = () => {
     }, typingDelay);
   };
 
+  const handleRequestPhoto = async () => {
+    if (!selectedCharacter || isGeneratingImage) return;
+    
+    setIsGeneratingImage(true);
+    setMessages((prev) => [...prev, { 
+      text: 'Можешь прислать фото? 📸', 
+      sender: 'user',
+      type: 'text'
+    }]);
+    
+    setIsTyping(true);
+    
+    setTimeout(async () => {
+      setIsTyping(false);
+      
+      const characterDescriptions: Record<string, string> = {
+        'София': 'beautiful romantic young woman with long flowing hair, soft natural lighting, dreamy aesthetic, gentle smile, artistic portrait photography, high quality',
+        'Анастасия': 'elegant confident woman with mysterious look, sophisticated style, dramatic lighting, alluring gaze, fashion photography, high quality',
+        'Виктория': 'professional businesswoman in elegant attire, confident posture, modern office background, natural beauty, corporate photography, high quality',
+        'Мария': 'warm friendly woman with kind smile, cozy casual style, natural lighting, approachable beauty, lifestyle photography, high quality',
+        'Кристина': 'athletic energetic woman in sportswear, dynamic pose, outdoor setting, healthy lifestyle, fitness photography, high quality',
+        'Алина': 'creative artistic woman, bohemian style, colorful background, expressive features, artistic portrait, high quality'
+      };
+      
+      const prompt = characterDescriptions[selectedCharacter.name] || 'beautiful young woman portrait, high quality photography';
+      
+      try {
+        const response = await fetch('/api/generate-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, characterName: selectedCharacter.name })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const photoResponses = [
+            'Вот моё фото для тебя 💕',
+            'Специально для тебя сделала 📸✨',
+            'Нравится? 😊💖',
+            'Держи, только для тебя 💋',
+          ];
+          const randomText = photoResponses[Math.floor(Math.random() * photoResponses.length)];
+          
+          setMessages((prev) => [...prev, { 
+            text: randomText,
+            sender: 'character',
+            type: 'image',
+            imageUrl: data.imageUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80'
+          }]);
+        } else {
+          setMessages((prev) => [...prev, { 
+            text: 'Извини, сейчас не могу отправить фото... Попробуй позже? 🥺',
+            sender: 'character',
+            type: 'text'
+          }]);
+        }
+      } catch (error) {
+        const placeholderImages = [
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80',
+          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&q=80',
+          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800&q=80',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80',
+        ];
+        const randomImage = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
+        
+        setMessages((prev) => [...prev, { 
+          text: 'Держи моё фото 💕',
+          sender: 'character',
+          type: 'image',
+          imageUrl: randomImage
+        }]);
+      }
+      
+      setIsGeneratingImage(false);
+    }, 2000);
+  };
+
   const handleCharacterSelect = (character: Character) => {
     setSelectedCharacter(character);
     setActiveTab('chat');
@@ -225,6 +303,7 @@ const Index = () => {
       {
         text: greeting,
         sender: 'character',
+        type: 'text',
       },
     ]);
   };
@@ -362,26 +441,75 @@ const Index = () => {
                       key={index}
                       className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-scale-in`}
                     >
-                      <div
-                        className={`max-w-[70%] rounded-3xl px-6 py-3 ${
-                          message.sender === 'user'
-                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                            : 'bg-purple-50 text-gray-800'
-                        }`}
-                      >
-                        <p className="text-sm leading-relaxed">{message.text}</p>
-                      </div>
+                      {message.type === 'image' && message.imageUrl ? (
+                        <div className="max-w-[60%]">
+                          <img 
+                            src={message.imageUrl} 
+                            alt="Generated photo" 
+                            className="rounded-2xl shadow-lg w-full object-cover"
+                          />
+                          {message.text && (
+                            <p className="text-sm text-purple-700 mt-2 px-2">{message.text}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <div
+                          className={`max-w-[70%] rounded-3xl px-6 py-3 ${
+                            message.sender === 'user'
+                              ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                              : 'bg-purple-50 text-gray-800'
+                          }`}
+                        >
+                          <p className="text-sm leading-relaxed">{message.text}</p>
+                        </div>
+                      )}
                     </div>
                   ))}
+                  {isTyping && (
+                    <div className="flex justify-start animate-scale-in">
+                      <div className="bg-purple-50 rounded-3xl px-6 py-3">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
 
               <div className="p-4 border-t border-purple-100 bg-purple-50/50">
+                <div className="flex gap-2 mb-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRequestPhoto()}
+                    disabled={isGeneratingImage}
+                    className="rounded-full text-xs"
+                  >
+                    {isGeneratingImage ? (
+                      <>
+                        <Icon name="Loader2" size={14} className="mr-1 animate-spin" />
+                        Генерирую...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="Camera" size={14} className="mr-1" />
+                        Попросить фото
+                      </>
+                    )}
+                  </Button>
+                  <Badge variant="secondary" className="text-xs">
+                    <Icon name="Sparkles" size={12} className="mr-1" />
+                    Premium функция
+                  </Badge>
+                </div>
                 <div className="flex gap-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                     placeholder="Напиши сообщение..."
                     className="rounded-full border-purple-200 focus:border-purple-400"
                   />
