@@ -290,6 +290,18 @@ const Index = () => {
               </p>
             </div>
 
+            <div className="mb-8 text-center">
+              <Card className="inline-block p-4 bg-gradient-to-r from-purple-100 to-pink-100 border-purple-200">
+                <div className="flex items-center gap-3">
+                  <Icon name="Sparkles" size={24} className="text-purple-600" />
+                  <div className="text-left">
+                    <p className="font-semibold text-purple-900">Специальное предложение</p>
+                    <p className="text-sm text-purple-700">Скидка 33% на все планы до конца месяца</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="p-8 border-2 border-purple-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <div className="text-center mb-6">
@@ -298,7 +310,11 @@ const Index = () => {
                   <div className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
                     490₽
                   </div>
-                  <p className="text-muted-foreground">в месяц</p>
+                  <p className="text-muted-foreground mb-2">в месяц</p>
+                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Icon name="CreditCard" size={14} />
+                    <span>Карта • СБП • Крипта</span>
+                  </div>
                 </div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center gap-2">
@@ -328,10 +344,20 @@ const Index = () => {
                 <div className="text-center mb-6">
                   <Icon name="Sparkles" size={48} className="mx-auto mb-4 text-purple-500" />
                   <h3 className="text-2xl font-bold mb-2">Премиум</h3>
-                  <div className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-                    990₽
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="text-2xl text-muted-foreground line-through">1490₽</span>
+                    <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                      990₽
+                    </div>
                   </div>
-                  <p className="text-muted-foreground">в месяц</p>
+                  <p className="text-muted-foreground mb-1">в месяц</p>
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700 mb-2">
+                    Скидка 33%
+                  </Badge>
+                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Icon name="CreditCard" size={14} />
+                    <span>Карта • СБП • Крипта</span>
+                  </div>
                 </div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center gap-2">
@@ -364,10 +390,20 @@ const Index = () => {
                 <div className="text-center mb-6">
                   <Icon name="Crown" size={48} className="mx-auto mb-4 text-orange-400" />
                   <h3 className="text-2xl font-bold mb-2">VIP</h3>
-                  <div className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
-                    1990₽
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="text-2xl text-muted-foreground line-through">2990₽</span>
+                    <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
+                      1990₽
+                    </div>
                   </div>
-                  <p className="text-muted-foreground">в месяц</p>
+                  <p className="text-muted-foreground mb-1">в месяц</p>
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700 mb-2">
+                    Скидка 33%
+                  </Badge>
+                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Icon name="CreditCard" size={14} />
+                    <span>Карта • СБП • Крипта</span>
+                  </div>
                 </div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center gap-2">
