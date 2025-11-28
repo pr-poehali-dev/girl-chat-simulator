@@ -5,6 +5,8 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 
 interface Character {
@@ -75,7 +77,9 @@ const characters: Character[] = [
 ];
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'home' | 'chat' | 'subscription'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'chat' | 'subscription' | 'payment'>('home');
+  const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number; oldPrice: number } | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'sbp' | 'crypto'>('card');
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [messages, setMessages] = useState<{ text: string; sender: 'user' | 'character' }[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -137,7 +141,7 @@ const Index = () => {
                 Чат
               </Button>
               <Button
-                variant={activeTab === 'subscription' ? 'default' : 'ghost'}
+                variant={activeTab === 'subscription' || activeTab === 'payment' ? 'default' : 'ghost'}
                 onClick={() => setActiveTab('subscription')}
                 className="rounded-full"
               >
@@ -279,6 +283,174 @@ const Index = () => {
           </div>
         )}
 
+        {activeTab === 'payment' && selectedPlan && (
+          <div className="max-w-2xl mx-auto animate-fade-in">
+            <Button
+              variant="ghost"
+              onClick={() => setActiveTab('subscription')}
+              className="mb-6 rounded-full"
+            >
+              <Icon name="ArrowLeft" size={18} className="mr-2" />
+              Назад к тарифам
+            </Button>
+
+            <Card className="p-8 border-2 border-purple-200 bg-white/90 backdrop-blur-sm">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                  Оформление подписки
+                </h2>
+                <p className="text-muted-foreground">Тариф: {selectedPlan.name}</p>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-2xl mb-8">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-lg">Стоимость:</span>
+                  {selectedPlan.oldPrice !== selectedPlan.price && (
+                    <span className="text-muted-foreground line-through">{selectedPlan.oldPrice}₽</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold">Итого:</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                    {selectedPlan.price}₽
+                  </span>
+                </div>
+                {selectedPlan.oldPrice !== selectedPlan.price && (
+                  <div className="mt-2 text-center">
+                    <Badge className="bg-green-500">Вы экономите {selectedPlan.oldPrice - selectedPlan.price}₽</Badge>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-8">
+                <h3 className="font-semibold mb-4 text-lg">Выберите способ оплаты</h3>
+                <RadioGroup value={paymentMethod} onValueChange={(value: any) => setPaymentMethod(value)}>
+                  <div className="space-y-3">
+                    <Card className="p-4 cursor-pointer hover:border-purple-400 transition-colors" onClick={() => setPaymentMethod('card')}>
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="card" id="card" />
+                        <Label htmlFor="card" className="flex items-center gap-3 cursor-pointer flex-1">
+                          <Icon name="CreditCard" size={24} className="text-purple-500" />
+                          <div>
+                            <p className="font-semibold">Банковская карта</p>
+                            <p className="text-sm text-muted-foreground">Visa, MasterCard, МИР</p>
+                          </div>
+                        </Label>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4 cursor-pointer hover:border-purple-400 transition-colors" onClick={() => setPaymentMethod('sbp')}>
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="sbp" id="sbp" />
+                        <Label htmlFor="sbp" className="flex items-center gap-3 cursor-pointer flex-1">
+                          <Icon name="Smartphone" size={24} className="text-purple-500" />
+                          <div>
+                            <p className="font-semibold">Система быстрых платежей</p>
+                            <p className="text-sm text-muted-foreground">Мгновенный перевод по номеру телефона</p>
+                          </div>
+                        </Label>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4 cursor-pointer hover:border-purple-400 transition-colors" onClick={() => setPaymentMethod('crypto')}>
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="crypto" id="crypto" />
+                        <Label htmlFor="crypto" className="flex items-center gap-3 cursor-pointer flex-1">
+                          <Icon name="Bitcoin" size={24} className="text-purple-500" fallback="Coins" />
+                          <div>
+                            <p className="font-semibold">Криптовалюта</p>
+                            <p className="text-sm text-muted-foreground">BTC, ETH, USDT</p>
+                          </div>
+                        </Label>
+                      </div>
+                    </Card>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {paymentMethod === 'card' && (
+                <div className="space-y-4 mb-8">
+                  <div>
+                    <Label htmlFor="cardNumber">Номер карты</Label>
+                    <Input id="cardNumber" placeholder="0000 0000 0000 0000" className="rounded-full" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="expiry">Срок действия</Label>
+                      <Input id="expiry" placeholder="MM/YY" className="rounded-full" />
+                    </div>
+                    <div>
+                      <Label htmlFor="cvv">CVV</Label>
+                      <Input id="cvv" placeholder="123" type="password" maxLength={3} className="rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'sbp' && (
+                <div className="space-y-4 mb-8">
+                  <div>
+                    <Label htmlFor="phone">Номер телефона</Label>
+                    <Input id="phone" placeholder="+7 (999) 123-45-67" className="rounded-full" />
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-xl">
+                    <p className="text-sm text-muted-foreground">
+                      <Icon name="Info" size={16} className="inline mr-1" />
+                      На ваш номер придёт push-уведомление для подтверждения оплаты
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'crypto' && (
+                <div className="space-y-4 mb-8">
+                  <div>
+                    <Label htmlFor="cryptoCurrency">Выберите криптовалюту</Label>
+                    <RadioGroup defaultValue="usdt" className="mt-2">
+                      <div className="flex gap-3">
+                        <Card className="p-3 flex-1 cursor-pointer hover:border-purple-400">
+                          <RadioGroupItem value="btc" id="btc" className="sr-only" />
+                          <Label htmlFor="btc" className="cursor-pointer text-center block">
+                            <p className="font-semibold">BTC</p>
+                          </Label>
+                        </Card>
+                        <Card className="p-3 flex-1 cursor-pointer hover:border-purple-400">
+                          <RadioGroupItem value="eth" id="eth" className="sr-only" />
+                          <Label htmlFor="eth" className="cursor-pointer text-center block">
+                            <p className="font-semibold">ETH</p>
+                          </Label>
+                        </Card>
+                        <Card className="p-3 flex-1 cursor-pointer hover:border-purple-400">
+                          <RadioGroupItem value="usdt" id="usdt" className="sr-only" />
+                          <Label htmlFor="usdt" className="cursor-pointer text-center block">
+                            <p className="font-semibold">USDT</p>
+                          </Label>
+                        </Card>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-xl">
+                    <p className="text-sm text-muted-foreground">
+                      <Icon name="Info" size={16} className="inline mr-1" />
+                      После оплаты вы будете перенаправлены на страницу с адресом кошелька
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <Button className="w-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 h-12 text-lg">
+                <Icon name="Lock" size={18} className="mr-2" />
+                Оплатить {selectedPlan.price}₽
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground mt-4">
+                <Icon name="Shield" size={12} className="inline mr-1" />
+                Безопасная оплата. Ваши данные защищены
+              </p>
+            </Card>
+          </div>
+        )}
+
         {activeTab === 'subscription' && (
           <div className="max-w-5xl mx-auto animate-fade-in">
             <div className="text-center mb-12">
@@ -330,7 +502,14 @@ const Index = () => {
                     <span>Базовые эмоции</span>
                   </li>
                 </ul>
-                <Button className="w-full rounded-full" variant="outline">
+                <Button 
+                  className="w-full rounded-full" 
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedPlan({ name: 'Базовый', price: 490, oldPrice: 490 });
+                    setActiveTab('payment');
+                  }}
+                >
                   Выбрать план
                 </Button>
               </Card>
@@ -381,7 +560,13 @@ const Index = () => {
                     <span>Фото от персонажей</span>
                   </li>
                 </ul>
-                <Button className="w-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                <Button 
+                  className="w-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  onClick={() => {
+                    setSelectedPlan({ name: 'Премиум', price: 990, oldPrice: 1490 });
+                    setActiveTab('payment');
+                  }}
+                >
                   Выбрать план
                 </Button>
               </Card>
@@ -427,7 +612,13 @@ const Index = () => {
                     <span>Эксклюзивный контент</span>
                   </li>
                 </ul>
-                <Button className="w-full rounded-full bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600">
+                <Button 
+                  className="w-full rounded-full bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600"
+                  onClick={() => {
+                    setSelectedPlan({ name: 'VIP', price: 1990, oldPrice: 2990 });
+                    setActiveTab('payment');
+                  }}
+                >
                   Выбрать план
                 </Button>
               </Card>
