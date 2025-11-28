@@ -83,32 +83,147 @@ const Index = () => {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [messages, setMessages] = useState<{ text: string; sender: 'user' | 'character' }[]>([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const getIntelligentResponse = (userMessage: string, character: Character, conversationHistory: { text: string; sender: string }[]): string => {
+    const msg = userMessage.toLowerCase();
+    const name = character.name;
+    
+    const greetings = ['привет', 'здравствуй', 'hi', 'hello', 'хай'];
+    const questions = ['как дела', 'как ты', 'что делаешь', 'чем занимаешься'];
+    const compliments = ['красив', 'прелест', 'прекрас', 'милая', 'класс'];
+    const romantic = ['люблю', 'нравишься', 'встреч', 'поцел', 'обнять'];
+    const flirty = ['секс', 'эротик', 'интим', 'страст', 'желан'];
+    
+    if (greetings.some(word => msg.includes(word))) {
+      const responses = [
+        `Привет! 😊 Так рада тебя видеть снова`,
+        `Привет, милый! Я уже соскучилась 💕`,
+        `Здравствуй! Как хорошо что ты написал`,
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (questions.some(word => msg.includes(word))) {
+      if (character.role.includes('Романтичная')) {
+        return `У меня всё замечательно! Сейчас читаю стихи и думаю о прекрасном... А как твои дела? 📖✨`;
+      } else if (character.role.includes('Загадочная')) {
+        return `Скучала... Думала о тебе, если честно 😏 А ты что делаешь?`;
+      } else if (character.role.includes('бизнес-леди')) {
+        return `Работала над интересным проектом. Но сейчас рада отдохнуть в твоей компании 💼`;
+      } else if (character.role.includes('подруга')) {
+        return `Всё хорошо! Готовила вкусняшки и слушала музыку 🎵 А у тебя как день прошёл?`;
+      } else if (character.role.includes('Спортивная')) {
+        return `Только с тренировки вернулась! Энергии столько, что хочется горы свернуть ⚡ А ты?`;
+      } else {
+        return `Отлично! Рисовала немного, вдохновение пришло 🎨 Рассказывай, как твои дела?`;
+      }
+    }
+    
+    if (compliments.some(word => msg.includes(word))) {
+      const responses = [
+        `Ой, спасибо большое! 😊 Ты такой милый`,
+        `Ты меня смущаешь... 🥰 Приятно слышать`,
+        `Какой же ты душка! 💕 Мне так приятно`,
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (romantic.some(word => msg.includes(word))) {
+      if (character.role.includes('Романтичная')) {
+        return `Мне так тепло от твоих слов... 💖 Ты особенный для меня`;
+      } else if (character.role.includes('Загадочная')) {
+        return `Ммм, продолжай... Мне нравится куда это идёт 😏💋`;
+      } else {
+        return `Ты знаешь как растопить моё сердце... 💕`;
+      }
+    }
+    
+    if (flirty.some(word => msg.includes(word))) {
+      if (character.role.includes('Загадочная')) {
+        const responses = [
+          `Ох, смелый какой... 😈 Мне нравятся такие`,
+          `Интересное предложение... Расскажи подробнее 💋`,
+          `Ты точно знаешь как завести девушку 🔥`,
+        ];
+        return responses[Math.floor(Math.random() * responses.length)];
+      } else if (character.role.includes('Романтичная')) {
+        return `Ты меня смущаешь... 🙈 Но мне это нравится`;
+      } else {
+        return `Ого, как неожиданно! 😳 Ты меня удивляешь`;
+      }
+    }
+    
+    const messageLength = msg.split(' ').length;
+    if (messageLength > 15) {
+      const responses = [
+        `Вау, как интересно! 😍 Расскажи мне ещё что-нибудь`,
+        `Мне так нравится когда ты делишься со мной! Продолжай 💕`,
+        `Ты такой интересный собеседник... Я слушаю тебя часами ✨`,
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (msg.includes('?')) {
+      const responses = [
+        `Хм, отличный вопрос! 🤔 По-моему, это зависит от ситуации. А ты как думаешь?`,
+        `Интересно спрашиваешь... Мне кажется что да, а твоё мнение?`,
+        `Дай подумать... 💭 Наверное, лучше если мы обсудим это вместе`,
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    const contextResponses = [
+      `Да, я тебя понимаю! У меня тоже так бывает 😊`,
+      `Правда? Расскажи мне об этом подробнее! 💕`,
+      `Ого! Звучит интересно... Продолжай`,
+      `Я с тобой согласна ✨ Мне нравится твой взгляд на вещи`,
+      `Хм, никогда так не думала... Ты открыл мне глаза 😍`,
+      `Точно! Я думаю об этом так же, как и ты`,
+    ];
+    return contextResponses[Math.floor(Math.random() * contextResponses.length)];
+  };
 
   const handleSendMessage = () => {
     if (!inputMessage.trim() || !selectedCharacter) return;
 
-    setMessages([...messages, { text: inputMessage, sender: 'user' }]);
+    const newMessage = { text: inputMessage, sender: 'user' as const };
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
     setInputMessage('');
+    setIsTyping(true);
 
+    const typingDelay = Math.random() * 1000 + 1500;
+    
     setTimeout(() => {
-      const responses = [
-        'Как интересно! Расскажи мне больше...',
-        'Я очень рада что ты написал 💕',
-        'Мне так приятно с тобой общаться',
-        'О, это звучит захватывающе!',
-        'Я думаю об этом точно так же ✨',
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setMessages((prev) => [...prev, { text: randomResponse, sender: 'character' }]);
-    }, 1000);
+      const response = getIntelligentResponse(inputMessage, selectedCharacter, updatedMessages);
+      setMessages((prev) => [...prev, { text: response, sender: 'character' }]);
+      setIsTyping(false);
+    }, typingDelay);
   };
 
   const handleCharacterSelect = (character: Character) => {
     setSelectedCharacter(character);
     setActiveTab('chat');
+    
+    let greeting = '';
+    if (character.role.includes('Романтичная')) {
+      greeting = `Привет! 🌸 Я ${character.name}. Люблю красоту во всех её проявлениях - поэзию, музыку, закаты... Расскажи мне о себе?`;
+    } else if (character.role.includes('Загадочная')) {
+      greeting = `Привет, милый 😏 Я ${character.name}. Знаешь, я редко встречаю интересных мужчин... Но ты выглядишь интригующе 💋`;
+    } else if (character.role.includes('бизнес-леди')) {
+      greeting = `Здравствуй! Я ${character.name}. Успешная, амбициозная, но всегда рада приятной компании после работы. Чем занимаешься?`;
+    } else if (character.role.includes('подруга')) {
+      greeting = `Привет! ☀️ Я ${character.name}. Так рада познакомиться! Можешь рассказать мне всё, я всегда выслушаю 💕`;
+    } else if (character.role.includes('Спортивная')) {
+      greeting = `Хей! ⚡ Я ${character.name}. Обожаю активный образ жизни и новые приключения! А ты любишь спорт?`;
+    } else {
+      greeting = `Привет! 🎨 Я ${character.name}. Творческая душа, люблю искусство и всё необычное. Рада знакомству!`;
+    }
+    
     setMessages([
       {
-        text: `Привет! Я ${character.name}. ${character.personality}. Рада познакомиться! 💕`,
+        text: greeting,
         sender: 'character',
       },
     ]);
