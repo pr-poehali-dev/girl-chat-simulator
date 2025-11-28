@@ -1,0 +1,41 @@
+{
+  "tests": [
+    {
+      "name": "Test OPTIONS request for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedHeaders": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "name": "Test POST with valid prompt",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "prompt": "beautiful young woman portrait, high quality photography",
+        "characterName": "София"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "imageUrl": "string",
+        "characterName": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test POST without prompt",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "characterName": "София"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

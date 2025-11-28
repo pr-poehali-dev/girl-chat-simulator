@@ -230,7 +230,7 @@ const Index = () => {
       const prompt = characterDescriptions[selectedCharacter.name] || 'beautiful young woman portrait, high quality photography';
       
       try {
-        const response = await fetch('/api/generate-photo', {
+        const response = await fetch('https://functions.poehali.dev/ffc663f9-ba7c-4c30-ab3f-1340998eaef7', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt, characterName: selectedCharacter.name })
